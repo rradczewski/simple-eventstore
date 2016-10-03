@@ -36,5 +36,5 @@ export const InMemoryStorageBackend: () => StorageBackend = () => {
     readStoreAsync: () => Promise.resolve(events),
     readStoreSync: () => events,
     writeStoreSync: (newEvents) => events = newEvents
-  }
+  };
 };

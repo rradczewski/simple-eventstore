@@ -29,7 +29,7 @@ describe('JsonFilestorageBackend', () => {
 
     const store = new EventStore(tmpFile);
 
-    return store.project(projection(on('FOO', (_, __) => ['FOO']))([]))
+    return store.project(projection(on('FOO', () => ['FOO']))([]))
       .then(result => {
         expect(result).toEqual(['FOO']);
       });

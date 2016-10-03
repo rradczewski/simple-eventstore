@@ -2,8 +2,8 @@
 import type { Event } from './event';
 import type { Projection } from './projection';
 
-import type { StorageBackend } from './storage';
-import { JsonFileStorageBackend } from './storage';
+import type { StorageBackend } from './storage'; // eslint-disable-line import/no-duplicates
+import { JsonFileStorageBackend } from './storage'; // eslint-disable-line import/no-duplicates
 
 
 class EventStore {
@@ -13,7 +13,7 @@ class EventStore {
     if(typeof file === 'string') {
       this.storageBackend = JsonFileStorageBackend(file);
     } else {
-      this.storageBackend = file
+      this.storageBackend = file;
     }
   }
 
@@ -32,9 +32,8 @@ class EventStore {
 
   version(): Promise<number> {
     return this.storageBackend.readStoreAsync()
-      .then(events => events.length)
+      .then(events => events.length);
   }
 }
-
 
 export default EventStore;

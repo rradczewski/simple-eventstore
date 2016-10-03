@@ -1,6 +1,3 @@
-import path from 'path';
-import fs from 'fs';
-import os from 'os';
 import expect from 'expect';
 
 import { EventStore, event, projection, on, InMemoryStorageBackend, eventStreamProjection } from '../src/index';
@@ -20,7 +17,7 @@ describe('the eventstore', () => {
       return store.project(eventStreamProjection)
         .then(events => {
           expect(events).toEqual([theEvent, anotherEvent]);
-        })
+        });
     });
 
     describe('versioning', () => {
@@ -69,6 +66,6 @@ describe('the eventstore', () => {
 
       return store.project(someProjection)
         .then(result => expect(result).toEqual(['SOME_EVENT', 'SOME_OTHER_EVENT']));
-    })
+    });
   });
 });
