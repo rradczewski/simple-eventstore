@@ -3,31 +3,29 @@ import fs from 'fs';
 import os from 'os';
 import expect from 'expect';
 
-import { EventStore, event, projection, on } from '../src/index';
-
-const getTmpFile = () => path.join(os.tmpdir(), `eventStore-${Math.random()*100000000 | 0}.json`);
+import { EventStore, event, projection, on, InMemoryStorageBackend, eventStreamProjection } from '../src/index';
 
 describe('the eventstore', () => {
   const SOME_EVENT = event('SOME_EVENT');
   const SOME_OTHER_EVENT = event('SOME_OTHER_EVENT');
 
   describe('storage', () => {
-    it('appends events to the file it is backed by', () => {
-      const tmpFile = getTmpFile();
-      const store = new EventStore(tmpFile);
+    it('can read the events it writes', () => {
+      const store = new EventStore(InMemoryStorageBackend());
       const theEvent = SOME_EVENT();
       const anotherEvent = SOME_OTHER_EVENT();
       store.storeEvent(theEvent);
       store.storeEvent(anotherEvent);
- 
-      const inJson = JSON.parse(fs.readFileSync(tmpFile, 'utf8'));
-      expect(inJson).toEqual([theEvent, anotherEvent]);
+
+      return store.project(eventStreamProjection)
+        .then(events => {
+          expect(events).toEqual([theEvent, anotherEvent]);
+        })
     });
 
     describe('versioning', () => {
       it('provides a version of the storage to expect when writing to it', () => {
-        const tmpFile = getTmpFile();
-        const store = new EventStore(tmpFile);
+        const store = new EventStore(InMemoryStorageBackend());
 
         return store.version()
           .then(version => {
@@ -43,8 +41,7 @@ describe('the eventstore', () => {
       });
 
       it('will refuse to store an event if the provided version number does not match', () => {
-        const tmpFile = getTmpFile();
-        const store = new EventStore(tmpFile);
+        const store = new EventStore(InMemoryStorageBackend());
 
         store.storeEvent(SOME_EVENT());
 
@@ -55,15 +52,14 @@ describe('the eventstore', () => {
     });
   });
 
-  describe('projecting a strema', () => {
+  describe('projecting a stream', () => {
     it('returns a Promise for the projection', () => {
       const someProjection = projection(
         on('SOME_EVENT', (s, e) => s.concat(e.type)),
         on('SOME_OTHER_EVENT', (s, e) => s.concat(e.type))
       )([]);
 
-      const tmpFile = getTmpFile();
-      const store = new EventStore(tmpFile);
+      const store = new EventStore(InMemoryStorageBackend());
 
       const theEvent = SOME_EVENT();
       const anotherEvent = SOME_OTHER_EVENT();

@@ -1,49 +1,37 @@
 // @flow
-import { readFile, readFileSync, writeFileSync } from 'fs';
 import type { Event } from './event';
 import type { Projection } from './projection';
 
-const readStoreAsync: (file: string) => Promise<Event[]> = (file) =>
-  new Promise((resolve, reject) =>
-    readFile(file, 'utf8', (err, data) => err ? reject(err) : resolve(data))
-  )
-    .then(data => JSON.parse(data))
-    .catch(() => []);
-
-const readStoreSync: (file: string) => Event[] = (file) => {
-  try {
-    return JSON.parse(readFileSync(file, 'utf8'));
-  } catch(e) {
-    return [];
-  }
-};
-
-const writeStoreSync: (file: string, events: Event[]) => void = (file, events) =>
-  writeFileSync(file, JSON.stringify(events), 'utf8');
+import type { StorageBackend } from './storage';
+import { JsonFileStorageBackend } from './storage';
 
 
 class EventStore {
-  file: string;
+  storageBackend: StorageBackend;
 
-  constructor(file: string) {
-    this.file = file;
+  constructor(file: string | StorageBackend) {
+    if(typeof file === 'string') {
+      this.storageBackend = JsonFileStorageBackend(file);
+    } else {
+      this.storageBackend = file
+    }
   }
 
   storeEvent(e: Event, expectedVersion: ?number) {
-    const previousEvents = readStoreSync(this.file);
+    const previousEvents = this.storageBackend.readStoreSync();
     if(expectedVersion != null && previousEvents.length !== expectedVersion) {
       throw new Error(`Expected store version to be ${expectedVersion}, but was ${previousEvents.length}`);
     }
-    writeStoreSync(this.file, previousEvents.concat(e));
+    this.storageBackend.writeStoreSync(previousEvents.concat(e));
   }
 
   project<S>(projection: Projection<S>): Promise<S> {
-    return readStoreAsync(this.file)
+    return this.storageBackend.readStoreAsync()
       .then(projection);
   }
 
   version(): Promise<number> {
-    return readStoreAsync(this.file)
+    return this.storageBackend.readStoreAsync()
       .then(events => events.length)
   }
 }
