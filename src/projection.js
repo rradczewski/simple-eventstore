@@ -7,7 +7,7 @@ type EventHandler<S> = {
 };
 type Fold<S> = (state: S, event: Event) => S;
 
-const on: (type: string, fold: Fold<*>) => EventHandler<*> = (type: string, fold) => ({
+const on: (type: string, fold: Fold<*>) => EventHandler<*> = (type, fold) => ({
   type,
   fold
 });
