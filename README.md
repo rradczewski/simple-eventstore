@@ -35,7 +35,7 @@ After that, it's mainly about defining _Events_ and _Projections_.
 
 ### Defining events
 
-Event Factories can be created using the `event` export, 
+Event Factories can be created using the `event` export,  
 which is a function `(type: string) => (payload: ?Object, meta: ?Object) => Event`
 
 ```javascript
@@ -45,8 +45,7 @@ import { event } from 'simple-eventstore';
 const UserJoined = event('USER_JOINED');
 
 // Creating an event
-...
-eventStore.storeEvent(UserJoined({name: 'Raimo', twitter: '@rradczewski}));
+eventStore.storeEvent(UserJoined({name: 'Raimo', twitter: '@rradczewski'}));
 ```
 
 ### Projecting State
