@@ -1,4 +1,4 @@
-// @flow
+// @flow weak
 import type { Event } from './index';
 
 type EventHandler<S> = {
@@ -6,10 +6,13 @@ type EventHandler<S> = {
   fold: Fold<S>,
 };
 type Fold<S> = (state: S, event: Event) => S;
+type Predicate = (event: Event) => boolean;
 
-const on: (type: string, fold: Fold<*>) => EventHandler<*> = (type, fold) => ({
+const on: (type: string, foldOrPredicate: Fold<*> | Predicate, fold: ?Fold<*>) => EventHandler<*> = (type, foldOrPredicate, fold) => ({
   type,
-  fold
+  fold: typeof fold === 'function' ?
+    ((state, event) => foldOrPredicate(event.payload) ? fold(state, event) : state) :
+    foldOrPredicate
 });
 
 export { on };

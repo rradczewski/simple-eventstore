@@ -24,7 +24,7 @@ describe('on', () => {
     expect(eventHandler.fold('FOO', 'BAR')).toEqual('FOOBAR');
   });
 
-  xit('can also take a predicate for applying the fold', () => {
+  it('can also take a predicate for applying the fold', () => {
     const eventStore = new EventStore(InMemoryStorageBackend());
 
     const Foo = event('FOO');
@@ -32,7 +32,7 @@ describe('on', () => {
     eventStore.storeEvent(Foo({ userId: '123', userName: 'should_show_up'}));
 
     const someProjection = projection(
-      on("FOO", propEq("userId", "123"), (state, {userName}) => state.concat(userName))
+      on("FOO", propEq("userId", "123"), (state, {payload: { userName }}) => state.concat([userName]))
     )([]);
 
     return eventStore.project(someProjection)
