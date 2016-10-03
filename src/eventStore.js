@@ -1,6 +1,7 @@
 // @flow
 import { readFile, readFileSync, writeFileSync } from 'fs';
 import type { Event } from './event';
+import type { Projection } from './projection';
 
 const readStoreAsync: (file: string) => Promise<Event[]> = (file) =>
   new Promise((resolve, reject) =>
@@ -34,6 +35,11 @@ class EventStore {
       throw new Error(`Expected store version to be ${expectedVersion}, but was ${previousEvents.length}`);
     }
     writeStoreSync(this.file, previousEvents.concat(e));
+  }
+
+  project<S>(projection: Projection<S>): Promise<S> {
+    return readStoreAsync(this.file)
+      .then(projection);
   }
 
   version(): Promise<number> {

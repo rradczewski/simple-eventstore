@@ -3,7 +3,7 @@ import fs from 'fs';
 import os from 'os';
 import expect from 'expect';
 
-import { EventStore, event } from '../src/index';
+import { EventStore, event, projection, on } from '../src/index';
 
 const getTmpFile = () => path.join(os.tmpdir(), `eventStore-${Math.random()*100000000 | 0}.json`);
 
@@ -53,5 +53,26 @@ describe('the eventstore', () => {
         }).toThrow();
       });
     });
+  });
+
+  describe('projecting a strema', () => {
+    it('returns a Promise for the projection', () => {
+      const someProjection = projection(
+        on('SOME_EVENT', (s, e) => s.concat(e.type)),
+        on('SOME_OTHER_EVENT', (s, e) => s.concat(e.type))
+      )([]);
+
+      const tmpFile = getTmpFile();
+      const store = new EventStore(tmpFile);
+
+      const theEvent = SOME_EVENT();
+      const anotherEvent = SOME_OTHER_EVENT();
+      store.storeEvent(theEvent);
+      store.storeEvent(anotherEvent);
+
+
+      return store.project(someProjection)
+        .then(result => expect(result).toEqual(['SOME_EVENT', 'SOME_OTHER_EVENT']));
+    })
   });
 });
