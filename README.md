@@ -73,3 +73,29 @@ eventStore.project(ActiveUsers)
         console.log(`All active users: ${activeUsers.join(', ')}`);
     });
 ```
+
+In order to project only events where **the payload** fulfills a precidicate, `on` is overloaded as `(type: String, foldOrPredicate: Fold | Predicate, fold: ?Fold)` (altough flow does not like that, see [this issue](https://github.com/rradczewski/simple-eventstore/issues/1) for more info). In the following example, a projection can be done for an individual user
+
+```javascript
+import { projection, on } from 'simple-eventstore';
+import { propEq } from 'ramda';
+
+const IsUserActive = username => projection(
+    on('USER_JOINED', propEq('name', username), () => true),
+    on('USER_PARTED', propEq('name', username), () => false)
+)(false);
+
+// SNIP
+eventStore.storeEvent(UserJoined({name: 'Raimo', twitter: 'rradczewski'}));
+
+eventStore.project(IsUserActive('Raimo'))
+  .then(isActive => {
+     if(isActive) {
+       console.log('Raimo is active');
+     } else {
+       console.log('Raimo is not active');
+     }
+  });
+
+// Will print: Raimo is active
+```
