@@ -4,8 +4,8 @@ import expect from 'expect';
 describe('projection', () => {
   it('folds over a list of events', () => {
     const someProjection = projection(
-      {type: 'FOO', fold: (state, event) => state.concat(event.type)},
-      {type: 'BAR', fold: (state, event) => state.concat(event.type)}
+      {type: 'FOO', fold: (state, e) => state.concat(e.type)},
+      {type: 'BAR', fold: (state, e) => state.concat(e.type)}
     )([]);
 
     const result = someProjection([{type: 'FOO'}, {type: 'IGNORED'}, {type: 'BAR'}]);
@@ -32,7 +32,7 @@ describe('on', () => {
     eventStore.storeEvent(Foo({ userId: '123', userName: 'should_show_up'}));
 
     const someProjection = projection(
-      on("FOO", propEq("userId", "123"), (state, {payload: { userName }}) => state.concat([userName]))
+      on('FOO', propEq('userId', '123'), (state, {payload: { userName }}) => state.concat([userName]))
     )([]);
 
     return eventStore.project(someProjection)
