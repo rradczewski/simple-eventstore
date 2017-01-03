@@ -15,7 +15,7 @@ const on = <S>(type: string, foldOrPredicate: Fold<S> | Predicate, fold: ?Fold<S
       return foldOrPredicate(event.payload) ? fold(state, event) : state;
     } else {
       // any is needed here because overloaded methods like this don't work with flow
-      return (foldOrPredicate : any)(state, event);
+      return (foldOrPredicate: any)(state, event);
     }
   }
 });
