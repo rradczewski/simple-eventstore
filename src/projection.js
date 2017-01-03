@@ -1,4 +1,4 @@
-// @flow weak
+// @flow 
 import type { Event } from './index';
 
 type EventHandler<S> = {
@@ -8,11 +8,16 @@ type EventHandler<S> = {
 type Fold<S> = (state: S, event: Event) => S;
 type Predicate = (event: Event) => boolean;
 
-const on: (type: string, foldOrPredicate: Fold<*> | Predicate, fold: ?Fold<*>) => EventHandler<*> = (type, foldOrPredicate, fold) => ({
+const on = <S>(type: string, foldOrPredicate: Fold<S> | Predicate, fold: ?Fold<S>): EventHandler<S> => ({
   type,
-  fold: typeof fold === 'function' ?
-    ((state, event) => foldOrPredicate(event.payload) ? fold(state, event) : state) :
-    foldOrPredicate
+  fold: (state: S, event: Event) => {
+    if(typeof fold === 'function') {
+      return foldOrPredicate(event.payload) ? fold(state, event) : state;
+    } else {
+      // any is needed here because overloaded methods like this don't work with flow
+      return (foldOrPredicate : any)(state, event);
+    }
+  }
 });
 
 export { on };
@@ -33,3 +38,4 @@ const projection: <S>(handlers: EventHandler<S>[]) => (state: S) => Projection<S
 export default projection;
 
 export const eventStreamProjection: (Projection<Event[]>) = (events) => events;
+
